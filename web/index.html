@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AirQR - Web Transfer</title>
+    <link rel="stylesheet" href="./style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="app-container">
+      <header>
+        <h1>AirQR</h1>
+      </header>
+      
+      <div class="tabs">
+        <button class="tab-btn active" data-target="sender-mode">Sender Mode</button>
+        <button class="tab-btn" data-target="receiver-mode">Receiver Mode</button>
+      </div>
+
+      <main>
+        <!-- SENDER SECTION -->
+        <section id="sender-mode" class="mode-section active">
+          <div class="card">
+            <h2>Send File</h2>
+            <input type="file" id="file-input" />
+            <div id="file-info" class="hidden info-box">
+              <p><strong>File:</strong> <span id="file-name"></span></p>
+              <p><strong>Size:</strong> <span id="file-size"></span> KB</p>
+            </div>
+            
+            <div class="qr-display-container">
+              <canvas id="qr-canvas" width="300" height="300"></canvas>
+              <div id="qr-placeholder">Select a file to generate stream</div>
+            </div>
+            
+            <div class="controls">
+              <label for="fps-slider">Speed: <span id="fps-value">20</span> FPS</label>
+              <input type="range" id="fps-slider" min="1" max="30" value="20" />
+              <button id="start-scan-btn" disabled>Start Scan</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- RECEIVER SECTION -->
+        <section id="receiver-mode" class="mode-section hidden">
+          <div class="card">
+            <h2>Receive File</h2>
+            <button id="start-camera-btn">Start Camera</button>
+            <div class="camera-container hidden" id="camera-container">
+              <video id="camera-preview" autoplay playsinline></video>
+              <canvas id="camera-canvas" class="hidden"></canvas>
+              <div class="overlay-mask"></div>
+            </div>
+            
+            <div class="progress-section">
+              <p id="progress-text">Waiting to scan...</p>
+              <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+            
+            <div id="success-modal" class="hidden info-box success-box">
+              <h3>File Received Successfully!</h3>
+              <a id="download-btn" class="btn">Save File</a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
