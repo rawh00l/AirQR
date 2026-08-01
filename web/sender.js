@@ -48,6 +48,12 @@ export function initSender() {
 }
 
 async function prepareChunks(file) {
+  const qrPlaceholder = document.getElementById('qr-placeholder');
+  const qrCanvas = document.getElementById('qr-canvas');
+  qrPlaceholder.textContent = 'Generating QR frames... Please wait.';
+  qrPlaceholder.classList.remove('hidden');
+  qrCanvas.style.display = 'none';
+
   const arrayBuffer = await file.arrayBuffer();
   const fileBytes = new Uint8Array(arrayBuffer);
   
@@ -61,7 +67,7 @@ async function prepareChunks(file) {
   combinedBytes.set(fileBytes, nameBytes.length + 1);
 
   const fileId = Math.floor(Math.random() * 0xFFFFFFFF);
-  const payloadSize = 300;
+  const payloadSize = 800; // Increased chunk size for fewer frames
   const totalChunks = Math.ceil(combinedBytes.length / payloadSize);
   
   chunks = [];
@@ -72,8 +78,27 @@ async function prepareChunks(file) {
     
     const chunkBytes = encodeChunk(fileId, totalChunks, i, payload);
     const isoString = bytesToStringIso(chunkBytes);
-    chunks.push(isoString);
+    
+    // Pre-render the canvas for instant FPS playback
+    const offscreenCanvas = document.createElement('canvas');
+    await QRCode.toCanvas(offscreenCanvas, [{ data: isoString, mode: 'byte' }], {
+      errorCorrectionLevel: 'L', // Lower error correction = less dense = faster decoding
+      margin: 1,
+      width: 400
+    });
+    chunks.push(offscreenCanvas);
+    
+    // Update progress slightly
+    if (i % 10 === 0) {
+      qrPlaceholder.textContent = `Generating frames... ${Math.round((i/totalChunks)*100)}%`;
+      await new Promise(r => setTimeout(r, 0)); // yield to UI
+    }
   }
+  
+  qrPlaceholder.classList.add('hidden');
+  qrCanvas.style.display = 'block';
+  qrCanvas.width = 400;
+  qrCanvas.height = 400;
 }
 
 function startAnimation(canvas) {
@@ -81,17 +106,13 @@ function startAnimation(canvas) {
   isAnimating = true;
   
   let currentIndex = 0;
+  const ctx = canvas.getContext('2d');
   
-  const drawFrame = async () => {
+  const drawFrame = () => {
     if (!isAnimating) return;
     
-    const chunkStr = chunks[currentIndex];
-    // Generate QR using binary mode via iso-8859-1 conversion (we pass the raw string and qrcode lib will use byte mode)
-    await QRCode.toCanvas(canvas, [{ data: chunkStr, mode: 'byte' }], {
-      errorCorrectionLevel: 'M',
-      margin: 1,
-      width: 300
-    });
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(chunks[currentIndex], 0, 0, canvas.width, canvas.height);
     
     currentIndex = (currentIndex + 1) % chunks.length;
     animationTimeout = setTimeout(drawFrame, 1000 / currentFps);
