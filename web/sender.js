@@ -67,7 +67,7 @@ async function prepareChunks(file) {
   combinedBytes.set(fileBytes, nameBytes.length + 1);
 
   const fileId = Math.floor(Math.random() * 0xFFFFFFFF);
-  const payloadSize = 800; // Increased chunk size for fewer frames
+  const payloadSize = 400; // Balanced size for reliable scanning
   const totalChunks = Math.ceil(combinedBytes.length / payloadSize);
   
   chunks = [];
@@ -82,7 +82,7 @@ async function prepareChunks(file) {
     // Pre-render the canvas for instant FPS playback
     const offscreenCanvas = document.createElement('canvas');
     await QRCode.toCanvas(offscreenCanvas, [{ data: isoString, mode: 'byte' }], {
-      errorCorrectionLevel: 'L', // Lower error correction = less dense = faster decoding
+      errorCorrectionLevel: 'M', // 'M' provides better scan reliability
       margin: 1,
       width: 400
     });
